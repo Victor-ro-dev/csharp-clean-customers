@@ -11,7 +11,7 @@ builder.Services.AddOpenApi();
 // Register Clean Architecture layers
 builder.Services
     .AddCoreDI()
-    .AddApplication()
+    .AddApplicationDI()
     .AddInfrastructureDI()
     .AddApiDI();
 

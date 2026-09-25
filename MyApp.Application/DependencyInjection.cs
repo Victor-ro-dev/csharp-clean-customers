@@ -4,7 +4,7 @@ namespace MyApp.Application;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddApplication(this IServiceCollection services)
+    public static IServiceCollection AddApplicationDI(this IServiceCollection services)
     {
         return services;
     }
