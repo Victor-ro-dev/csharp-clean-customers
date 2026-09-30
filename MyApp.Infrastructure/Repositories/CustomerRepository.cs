@@ -23,7 +23,7 @@ namespace MyApp.Infrastructure.Repository
         public async Task<CustomerEntity> AddCustomerAsyncByID(CustomerEntity content)
         {
             content.Id = Guid.NewGuid();
-            dbContext.Customers.AddAsync(content);
+            await dbContext.Customers.AddAsync(content);
             await dbContext.SaveChangesAsync();
             return content; 
         }

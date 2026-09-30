@@ -1,17 +1,37 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MyApp.Infrastructure.Data;
+using MyApp.Core.Interfaces;
+using MyApp.Infrastructure.Repository;
 
 namespace MyApp.Infrastructure;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructureDI(this IServiceCollection services)
-    {   
+    public static IServiceCollection AddInfrastructureDI(this IServiceCollection services, IConfiguration configuration)
+    {
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+
         services.AddDbContext<AppDbContext>(options =>
-{
-    options.UseSqlServer(@"Data Source=(localdb)\MSSQLLocalDB;Integrated Security=True;Persist Security Info=False;Pooling=False;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Application Name=""SQL Server Management Studio"";Command Timeout=0");
-});
+        {
+            options.UseSqlServer(connectionString);
+        });
+
+        services.AddScoped<ICustomerRepository, CustomerRepository>();
+        return services;
+    }
+
+    public static IServiceCollection AddInfrastructureDI(this IServiceCollection services)
+    {
+        services.AddDbContext<AppDbContext>((serviceProvider, options) =>
+        {
+            var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
+            options.UseSqlServer(connectionString);
+        });
+
+        services.AddScoped<ICustomerRepository, CustomerRepository>();
         return services;
     }
 }
