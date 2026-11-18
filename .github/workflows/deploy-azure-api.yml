@@ -1,4 +1,4 @@
-name: Deploy .NET 10 API to Azure App Service (Free F1)
+name: Build & Deploy .NET 10 API
 
 on:
   push:
@@ -9,6 +9,7 @@ on:
       - 'MyApp.Application/**'
       - 'MyApp.Core/**'
       - 'MyApp.Infrastructure/**'
+      - 'Dockerfile'
       - '.github/workflows/deploy-azure-api.yml'
   workflow_dispatch:
 
@@ -31,7 +32,8 @@ jobs:
       - name: Publish API
         run: dotnet publish MyApp.Api/MyApp.Api.csproj --configuration Release --output ./publish
 
-      - name: Deploy to Azure Web App
+      - name: Deploy to Azure Web App (when configured)
+        if: ${{ vars.AZURE_WEBAPP_NAME != '' }}
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ vars.AZURE_WEBAPP_NAME }}
