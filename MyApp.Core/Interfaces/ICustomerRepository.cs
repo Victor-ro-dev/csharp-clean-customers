@@ -1,19 +1,13 @@
-using System;
-using System.Collections.Generic;
 using MyApp.Core.Entities;
-
 
 namespace MyApp.Core.Interfaces
 {
-   public interface ICustomerRepository
+    public interface ICustomerRepository
     {
-        Task<IEnumerable<CustomerEntity>> GetCustomerEntitiesAsync();
-        Task<CustomerEntity> GetCustomerAsyncByID(Guid ID);
-
-        Task<CustomerEntity> AddCustomerAsyncByID(CustomerEntity content);
-
-        Task<CustomerEntity> UpdateCustomerAsyncByID(Guid ID, CustomerEntity content);
-
-        Task<bool> DeleteCustomerAsyncByID(Guid ID);
+        Task<IEnumerable<CustomerEntity>> GetCustomerEntitiesAsync(CancellationToken cancellationToken = default);
+        Task<CustomerEntity?> GetCustomerAsyncByID(Guid id, CancellationToken cancellationToken = default);
+        Task<CustomerEntity> AddCustomerAsyncByID(CustomerEntity content, CancellationToken cancellationToken = default);
+        Task<CustomerEntity?> UpdateCustomerAsyncByID(Guid id, CustomerEntity content, CancellationToken cancellationToken = default);
+        Task<bool> DeleteCustomerAsyncByID(Guid id, CancellationToken cancellationToken = default);
     }
 }

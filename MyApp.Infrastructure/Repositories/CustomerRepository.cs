@@ -1,63 +1,60 @@
-using System;
+using Microsoft.EntityFrameworkCore;
 using MyApp.Core.Entities;
 using MyApp.Core.Interfaces;
-using System.Collections.Generic;
-using System.Text;
 using MyApp.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
 
 namespace MyApp.Infrastructure.Repository
 {
-    public class CustomerRepository(AppDbContext dbContext)  : ICustomerRepository
+    public class CustomerRepository(AppDbContext dbContext) : ICustomerRepository
     {
-        public async Task<IEnumerable<CustomerEntity>> GetCustomerEntitiesAsync()
+        public async Task<IEnumerable<CustomerEntity>> GetCustomerEntitiesAsync(CancellationToken cancellationToken = default)
         {
-            return await dbContext.Customers.ToListAsync();
+            return await dbContext.Customers
+                .AsNoTracking()
+                .OrderBy(c => c.Name)
+                .ToListAsync(cancellationToken);
         }
 
-        public async Task<CustomerEntity> GetCustomerAsyncByID(Guid ID)
+        public async Task<CustomerEntity?> GetCustomerAsyncByID(Guid id, CancellationToken cancellationToken = default)
         {
-            return await dbContext.Customers.FirstOrDefaultAsync(query=>query.Id == ID);
+            return await dbContext.Customers
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
         }
 
-        public async Task<CustomerEntity> AddCustomerAsyncByID(CustomerEntity content)
+        public async Task<CustomerEntity> AddCustomerAsyncByID(CustomerEntity content, CancellationToken cancellationToken = default)
         {
             content.Id = Guid.NewGuid();
-            await dbContext.Customers.AddAsync(content);
-            await dbContext.SaveChangesAsync();
-            return content; 
-        }
-
-        public async Task<CustomerEntity>
-        UpdateCustomerAsyncByID(Guid ID, CustomerEntity content)
-        {
-            var customer = await dbContext.Customers.FirstOrDefaultAsync(query=>query.Id == ID);
-
-            if (customer is not null)
-            {
-                customer.Name = content.Name;
-                customer.Email = content.Email;
-                customer.Phone = content.Phone;
-
-                await dbContext.SaveChangesAsync();
-
-                return customer;
-            }
-
+            await dbContext.Customers.AddAsync(content, cancellationToken);
+            await dbContext.SaveChangesAsync(cancellationToken);
             return content;
         }
 
-        public async Task<bool> DeleteCustomerAsyncByID(Guid ID)
+        public async Task<CustomerEntity?> UpdateCustomerAsyncByID(Guid id, CustomerEntity content, CancellationToken cancellationToken = default)
         {
-            var customer = await dbContext.Customers.FirstOrDefaultAsync(query => query.Id == ID);
+            var customer = await dbContext.Customers
+                .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
 
-            if (customer is not null)
+            if (customer is null)
             {
-                dbContext.Customers.Remove(customer);
-                return await dbContext.SaveChangesAsync() > 0;
+                return null;
             }
 
-            return false;
+            customer.Name = content.Name;
+            customer.Email = content.Email;
+            customer.Phone = content.Phone;
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+            return customer;
+        }
+
+        public async Task<bool> DeleteCustomerAsyncByID(Guid id, CancellationToken cancellationToken = default)
+        {
+            var affectedRows = await dbContext.Customers
+                .Where(c => c.Id == id)
+                .ExecuteDeleteAsync(cancellationToken);
+
+            return affectedRows > 0;
         }
     }
 }
